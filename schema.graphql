@@ -19,7 +19,7 @@ type Item {
 
 type Mutation {
     addItem(amount: Int!, category: String!, description: String, img_base64: String, subtitle: String, tags: String, title: String!, unit: String!): Item
-    updateItem(id: Int!, amount: Int!, category: String!, description: String, img_base64: String, subtitle: String, tags: String, title: String!, unit: String!): Item
+    updateItem(id: ID!, amount: Int!, category: String!, description: String, img_base64: String, subtitle: String, tags: String, title: String!, unit: String!): Item
 }
 
 type Query {

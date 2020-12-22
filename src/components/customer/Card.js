@@ -7,6 +7,7 @@ const Container = styled.div`
   min-height: 540px;
   margin: 12px;
   box-shadow: 0 0 5px 3px #333333;
+  cursor: pointer;
   :hover {
     box-shadow: 0 0 15px 6px #333333;
   }
@@ -77,10 +78,10 @@ const Description = styled.div`
   margin-top: 20px;
 `
 
-const Card = ({imgSrc, title, subtitle, price: {amount, unit}, description, tags = []}) => {
+const Card = ({handleClick, imgSrc, title, subtitle, price: {amount, unit}, description, tags = []}) => {
     return (
-        <Container>
-            <Cover src={imgSrc}/>
+        <Container onClick={handleClick}>
+            <Cover src={`data:image/jpeg;base64,${imgSrc}`}/>
             <Tags>
                 {tags.map((tag, index) => <Tag key={index}>{tag}</Tag>)}
             </Tags>

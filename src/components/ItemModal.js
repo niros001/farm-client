@@ -1,4 +1,4 @@
-import React, {useState, useCallback} from 'react';
+import React, {useState, useCallback, useEffect} from 'react';
 import {Modal, Input, Select} from 'antd';
 import styled from 'styled-components';
 import {useMutation} from '@apollo/client';
@@ -9,10 +9,9 @@ const StyledInput = styled(Input)`
   margin: 15px 0;
 `
 
-const ItemModal = ({visible, onCancel}) => {
+const ItemModal = ({visible, onCancel, item}) => {
     const [addItem, {loading, error, data}] = useMutation(mutations.ADD_ITEM_MUTATION);
-    // const [updateItem, {loading, error, data}] = useMutation(mutations.UPDATE_ITEM_MUTATION);
-    console.log({loading, error, data});
+    const [updateItem, {loading2, error2, data2}] = useMutation(mutations.UPDATE_ITEM_MUTATION);
 
     const [img_base64, setImg_base64] = useState(null);
     const [category, setCategory] = useState('fruits');
@@ -23,23 +22,56 @@ const ItemModal = ({visible, onCancel}) => {
     const [description, setDescription] = useState(null);
     const [tags, setTags] = useState(null);
 
-    const onAdd = useCallback(() => {
-        addItem({
-            variables: {
-                category,
-                img_base64,
-                title,
-                subtitle,
-                amount,
-                unit,
-                description,
-                tags,
-            }
-        })
-            .then(resp => console.log({resp}))
-            .catch(err => console.log({err}))
+    const onSave = useCallback(() => {
+        if (item) {
+            updateItem({
+                variables: {
+                    id: item.id,
+                    category,
+                    img_base64,
+                    title,
+                    subtitle,
+                    amount,
+                    unit,
+                    description,
+                    tags,
+                }
+            })
+                .then(resp => console.log({resp}))
+                .catch(err => console.log({err}))
+        } else {
+            addItem({
+                variables: {
+                    category,
+                    img_base64,
+                    title,
+                    subtitle,
+                    amount,
+                    unit,
+                    description,
+                    tags,
+                }
+            })
+                .then(resp => console.log({resp}))
+                .catch(err => console.log({err}))
+        }
+
         onCancel();
-    }, [onCancel, addItem, category, img_base64, title, subtitle, amount, unit, description, tags])
+        window.location.reload();
+    }, [item, onCancel, updateItem, addItem, category, img_base64, title, subtitle, amount, unit, description, tags])
+
+    useEffect(() => {
+        if(!!item) {
+            setImg_base64(item.img_base64);
+            setCategory(item.category);
+            setTitle(item.title);
+            setSubtitle(item.subtitle);
+            setAmount(item.amount);
+            setUnit(item.unit);
+            setDescription(item.description);
+            setTags(item.tags);
+        }
+    }, [item]);
 
     return (
         <Modal
@@ -47,10 +79,10 @@ const ItemModal = ({visible, onCancel}) => {
             title="Add new item"
             visible={visible}
             onCancel={onCancel}
-            onOk={onAdd}
+            onOk={onSave}
             centered
         >
-            <Select defaultValue="fruits" style={{width: '100%'}} onChange={setCategory}>
+            <Select value={category} style={{width: '100%'}} onChange={setCategory}>
                 <Select.Option value="fruits">fruits</Select.Option>
                 <Select.Option value="vegetables">vegetables</Select.Option>
                 <Select.Option value="nuts">nuts</Select.Option>
@@ -58,13 +90,13 @@ const ItemModal = ({visible, onCancel}) => {
                 <Select.Option value="pastries">pastries</Select.Option>
                 <Select.Option value="olive-oil">olive-oil</Select.Option>
             </Select>
-            <StyledInput addonBefore={'Photo'} onChange={({target: {value}}) => setImg_base64(value)}/>
-            <StyledInput addonBefore={'Title'} onChange={({target: {value}}) => setTitle(value)}/>
-            <StyledInput addonBefore={'Subtitle'} onChange={({target: {value}}) => setSubtitle(value)}/>
-            <StyledInput addonBefore={'Price'} onChange={({target: {value}}) => setAmount(parseInt(value))}/>
-            <StyledInput addonBefore={'Unit'} onChange={({target: {value}}) => setUnit(value)}/>
-            <StyledInput addonBefore={'Description'} onChange={({target: {value}}) => setDescription(value)}/>
-            <StyledInput addonBefore={'Tags'} placeholder={'Example: Tag1, Tag2, Tag3'} onChange={({target: {value}}) => setTags(value)}/>
+            <StyledInput addonBefore={'Photo'} onChange={({target: {value}}) => setImg_base64(value)} value={img_base64}/>
+            <StyledInput addonBefore={'Title'} onChange={({target: {value}}) => setTitle(value)} value={title}/>
+            <StyledInput addonBefore={'Subtitle'} onChange={({target: {value}}) => setSubtitle(value)} value={subtitle}/>
+            <StyledInput addonBefore={'Price'} onChange={({target: {value}}) => setAmount(parseInt(value))} value={amount}/>
+            <StyledInput addonBefore={'Unit'} onChange={({target: {value}}) => setUnit(value)} value={unit}/>
+            <StyledInput addonBefore={'Description'} onChange={({target: {value}}) => setDescription(value)} value={description}/>
+            <StyledInput addonBefore={'Tags'} placeholder={'Example: Tag1, Tag2, Tag3'} onChange={({target: {value}}) => setTags(value)} value={tags}/>
         </Modal>
     )
 };

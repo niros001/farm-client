@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useCallback, useEffect} from 'react';
 import styled from 'styled-components';
 import {Menu, Button} from 'antd';
 import {FaApple, FaCarrot, FaStore, FaBreadSlice, FaWineBottle} from 'react-icons/fa';
@@ -40,7 +40,20 @@ const Grid = styled.div`
 const App = () => {
   const [selected, setSelected] = useState('fruits');
   const [visible, setVisible] = useState(false);
+  const [itemId, setItemId] = useState(null);
   const {loading, error, data} = useQuery(queries.ITEMS_QUERY);
+
+  const onCancel = useCallback(() => {
+    setVisible(false);
+    setItemId(null);
+  }, [])
+
+  useEffect(() => {
+    if (!!itemId) {
+      setVisible(true);
+    }
+  }, [itemId])
+
   return (
       <Container>
         <MenuContainer>
@@ -66,12 +79,13 @@ const App = () => {
           </StyledMenu>
           <Button onClick={() => setVisible(true)}>הוסף פריט</Button>
         </MenuContainer>
-        <ItemModal visible={visible} onCancel={() => setVisible(false)}/>
+        <ItemModal visible={visible} onCancel={onCancel} item={(data?.items || []).find(({id}) => id === itemId)}/>
         {loading && <Spinner />}
         {!loading && !error && data && (
             <Grid>
               {(data?.items || []).filter(({category}) => category === selected).map(({id, img_base64, title, subtitle, amount, unit, description, tags = ''}) => (
                   <Card
+                      handleClick={() => setItemId(id)}
                       key={id}
                       imgSrc={img_base64}
                       title={title}
