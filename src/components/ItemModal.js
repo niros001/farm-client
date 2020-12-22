@@ -51,6 +51,7 @@ const ItemModal = ({visible, onCancel}) => {
             centered
         >
             <Select defaultValue="fruits" style={{width: '100%'}} onChange={setCategory}>
+                <Select.Option value="fruits">fruits</Select.Option>
                 <Select.Option value="vegetables">vegetables</Select.Option>
                 <Select.Option value="nuts">nuts</Select.Option>
                 <Select.Option value="products">products</Select.Option>
