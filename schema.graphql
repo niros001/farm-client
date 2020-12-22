@@ -1,0 +1,36 @@
+# This file was generated based on ".graphqlconfig". Do not edit manually.
+
+schema {
+    query: Query
+    mutation: Mutation
+}
+
+type Item {
+    amount: Float!
+    category: String!
+    description: String
+    id: ID!
+    img_base64: String
+    subtitle: String
+    tags: String!
+    title: String!
+    unit: String!
+}
+
+type Mutation {
+    addItem(amount: Int!, category: String!, description: String, img_base64: String, subtitle: String, tags: String, title: String!, unit: String!): Item
+    updateItem(id: Int!, amount: Int!, category: String!, description: String, img_base64: String, subtitle: String, tags: String, title: String!, unit: String!): Item
+}
+
+type Query {
+    items: [Item!]!
+}
+
+enum CacheControlScope {
+    PRIVATE
+    PUBLIC
+}
+
+
+"The `Upload` scalar type represents a file upload."
+scalar Upload
