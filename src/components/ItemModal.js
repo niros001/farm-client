@@ -37,7 +37,7 @@ const ItemModal = ({visible, onCancel, item}) => {
                     tags,
                 }
             })
-                .then(resp => console.log({resp}))
+                .then(resp => window.location.reload())
                 .catch(err => console.log({err}))
         } else {
             addItem({
@@ -52,12 +52,11 @@ const ItemModal = ({visible, onCancel, item}) => {
                     tags,
                 }
             })
-                .then(resp => console.log({resp}))
+                .then(resp => window.location.reload())
                 .catch(err => console.log({err}))
         }
 
         onCancel();
-        window.location.reload();
     }, [item, onCancel, updateItem, addItem, category, img_base64, title, subtitle, amount, unit, description, tags])
 
     useEffect(() => {
