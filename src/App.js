@@ -1,7 +1,7 @@
 import React, {useState, useCallback, useEffect} from 'react';
 import styled from 'styled-components';
 import {Menu, Button} from 'antd';
-import {FaApple, FaCarrot, FaStore, FaBreadSlice, FaWineBottle} from 'react-icons/fa';
+import {FaApple, FaCarrot, FaStore, FaBreadSlice, FaWineBottle, FaShoppingCart} from 'react-icons/fa';
 import {GiAcorn} from 'react-icons/gi';
 import {useQuery} from '@apollo/client';
 import ItemModal from './components/ItemModal'
@@ -35,6 +35,19 @@ const Grid = styled.div`
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+`
+
+const Cart = styled.div`
+  display: flex;
+  align-items: center;
+  border: 1px solid #1890FF;
+  border-radius: 16px;
+  padding: 6px 20px;
+  margin: 0 15px;
+  color: #1890FF;
+  svg {
+    margin-left: 5px;
+  }
 `
 
 const App = () => {
@@ -77,6 +90,10 @@ const App = () => {
               <Title>שמן זית</Title>
             </Menu.Item>
           </StyledMenu>
+          <Cart>
+            <FaShoppingCart />
+            <div>0 ₪</div>
+          </Cart>
           <Button onClick={() => setVisible(true)}>הוסף פריט</Button>
         </MenuContainer>
         <ItemModal visible={visible} onCancel={onCancel} item={(data?.items || []).find(({id}) => id === itemId)}/>
