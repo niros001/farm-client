@@ -1,19 +1,21 @@
-import React, {useCallback, useEffect} from 'react'
-import styled from 'styled-components'
+import React, {useCallback} from 'react'
+import {connect} from 'react-redux'
 import {Modal, Input, Form, Button, notification} from 'antd'
 import {MailOutlined,  KeyOutlined} from '@ant-design/icons'
 import {useMutation} from '@apollo/client';
 import * as mutations from '../../graphql/mutations';
+import * as userActions from '../../store/actions/userActions'
 
-const LoginModal = ({visible, onCancel}) => {
+const LoginModal = ({visible, onCancel, store, signin}) => {
+    console.log({store})
     const [form] = Form.useForm();
     const [loginUser, {loading, error, data}] = useMutation(mutations.LOGIN_MUTATION);
     const token = data?.signin?.token;
-    console.log({token});
     const onFinish = useCallback(() => {
-        loginUser({variables: form.getFieldsValue()})
-            .catch(err => notification.error(err))
-    }, [loginUser, form]);
+        signin(loginUser({variables: form.getFieldsValue()})
+            .then((resp) => signin(resp))
+            .catch(err => notification.error(err)))
+    }, [loginUser, form, signin]);
     return (
         <Modal
             style={{direction: 'ltr'}}
@@ -67,4 +69,4 @@ const LoginModal = ({visible, onCancel}) => {
     )
 };
 
-export default LoginModal;
+export default connect(store => store, userActions)(LoginModal);

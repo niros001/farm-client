@@ -1,10 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import {Provider} from 'react-redux'
 import {ApolloProvider, ApolloClient, createHttpLink, InMemoryCache} from '@apollo/client';
 import './index.css';
 import 'antd/dist/antd.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import store from './store'
 
 const httpLink = createHttpLink({
     uri: 'https://organic-products.herokuapp.com'
@@ -18,7 +20,9 @@ const client = new ApolloClient({
 ReactDOM.render(
   <React.StrictMode>
       <ApolloProvider client={client}>
-          <App />
+          <Provider store={store}>
+              <App />
+          </Provider>
       </ApolloProvider>
   </React.StrictMode>,
   document.getElementById('root')
