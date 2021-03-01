@@ -14,5 +14,5 @@ export const parsingItemsToFile = (items) => items.map((item, index) => {
             newItem[23] = newItem[23].map(({name, updatedValue, type}) => `☐ ${updatedValue} ${type} - ${name}`).toString();
         }
     }
-    return item;
+    return newItem;
 });
