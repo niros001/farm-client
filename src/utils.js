@@ -1,0 +1,1 @@
+export const parsingItems = (items) => items.split('☐ ').slice(1, items.length);
