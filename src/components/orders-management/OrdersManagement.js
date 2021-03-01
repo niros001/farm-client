@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import {compact} from 'lodash'
 import {notification, Table, Popover, Button, Modal, Input} from 'antd';
 import {CSVReader, CSVDownloader} from 'react-papaparse'
-import {parsingItems} from '../../utils';
+import {parsingItemsFromFile, parsingItemsToFile} from '../../utils';
 import StorageManagement from './StorageManagement';
 
 const Container = styled.div`
@@ -20,23 +20,30 @@ const StyledTable = styled(Table)`
   }
 `
 
-const ItemsRenderer = ({items}) => {
-    const list = parsingItems(items);
+const ItemsRenderer = ({items, showUpdated}) => {
     return <ul style={{width: 'max-content'}}>
-        {list.map((item, index) => <li key={index}>{item}</li>)}
+        {items.map((item, index) => <li key={index}>{item.name} - {showUpdated ? item.updatedValue : item.value}&nbsp;{item.type}</li>)}
     </ul>
 }
 
-const ContentModal = ({items}) => {
-    const list = parsingItems(items);
+const ContentModal = ({selectedOrder, updateItems}) => {
+    const id = selectedOrder[0];
+    let items = selectedOrder[16];
     return <ul style={{width: 'max-content', maxHeight: 500, overflow: 'auto'}}>
-        {list.map((item, index) => {
-            const [count, name] = item.split(' - ');
-            const [value, type] = count.split(' ');
+        {items.map(({name, value, updatedValue, type}, index) => {
             return <li style={{display: 'flex', alignItems: 'center'}} key={index}>
                 {name}
-                <Input type="number" step="0.01" style={{width: 100, margin: 12}} disabled value={value} />
-                <Input type="number" step="0.01" style={{width: 100, margin: 12}} defaultValue={value} />
+                <b>[{value}]</b>
+                <Input
+                    type="number"
+                    step="0.01"
+                    style={{width: 100, margin: 12}}
+                    value={updatedValue}
+                    onChange={({target: {value}}) => {
+                        items[index].updatedValue = value;
+                        updateItems(id, items);
+                    }}
+                />
                 {type}
             </li>
         })}
@@ -186,19 +193,24 @@ const columns = [
         title: 'פריטים מעודכנים',
         dataIndex: 23,
         key: 23,
+        render: (text, record, index) => <Popover trigger="click" onClick={(e) => e.stopPropagation()} content={<ItemsRenderer items={text} showUpdated />}><Button>Items</Button></Popover>
+
     },
 ];
 
 const OrdersManagement = () => {
     const [data, setData] = useState([]);
-    const [updatedColumn, setUpdatedColumn] = useState([]);
     const [visible, setVisible] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState({});
 
+    const fileData = useMemo(() => parsingItemsToFile(data), [data]);
     const dataSource = useMemo(() => compact(data.slice(1, data.length)).map((d) => d.map((items, i) => items)), [data]);
 
     const handleOnDrop = useCallback((data) => {
-        setData(data.map(({data}, index) => [...data, index === 0 ? 'פריטים מעודכנים' : '']));
+        setData(data.map(({data}, index) => {
+            if (index !== 0) data[16] = parsingItemsFromFile(data[16])
+            return [...data, index === 0 ? 'פריטים מעודכנים' : data[16]];
+        }));
     }, []);
 
     const handleOnError = useCallback((err, file, inputElem, reason) => {
@@ -208,6 +220,12 @@ const OrdersManagement = () => {
     const handleOnRemoveFile = useCallback((data) => {
         notification.info({message: 'File removed'});
     }, []);
+
+    const updateItems = useCallback((id, newItems) => {
+        const newData = [...data];
+        newData[id][23] = newItems;
+        setData(newData)
+    }, [data])
 
     return (
         <Container>
@@ -223,7 +241,7 @@ const OrdersManagement = () => {
             <StorageManagement dataSource={dataSource} />
             <CSVDownloader
                 style={{maxWidth: 'max-content', margin: 20}}
-                data={data}
+                data={fileData}
                 filename={'updated_csv'}
                 type={'link'}
             >
@@ -250,8 +268,7 @@ const OrdersManagement = () => {
                 onOk={() => console.log('Apply pressed')}
                 okText="APPLY"
             >
-                <p>Update items...</p>
-                <ContentModal items={selectedOrder[16]} />
+                <ContentModal selectedOrder={selectedOrder} updateItems={updateItems} />
             </Modal>
         </Container>
     )

@@ -1,7 +1,6 @@
 import React from 'react';
 import {compact} from 'lodash';
 import {Table} from 'antd';
-import {parsingItems} from '../../utils';
 
 const columns = [
     {
@@ -28,13 +27,11 @@ const columns = [
 
 const StorageManagement = ({dataSource}) => {
     const items =
-        compact(dataSource).map((data) => parsingItems(data[16]))
+        compact(dataSource).map((data) => data[16])
             .reduce((acc, cur) => {
                 let newAcc = acc;
-                cur.map((item) => {
-                    const [count, name] = item.split(' - ');
-                    const [value, type] = count.split(' ');
-                    newAcc = ({...newAcc, [name]: {value: (newAcc[name]?.value || 0) + parseInt(value), type}})
+                cur.map(({name, value, type}) => {
+                    newAcc = ({...newAcc, [name]: {value: (newAcc[name]?.value || 0) + value, type}})
                     return null;
                 })
                 return newAcc;
@@ -44,7 +41,10 @@ const StorageManagement = ({dataSource}) => {
             <div>STORAGE</div>
             <div>to give</div>
             <br/>
-            <Table columns={columns} dataSource={Object.entries(items)} />
+            <Table rowKey={(record) => record[0]}
+                   columns={columns}
+                   dataSource={Object.entries(items)}
+            />
         </>
     )
 };
