@@ -1,6 +1,6 @@
 import React, {useMemo, useState, useCallback, useEffect} from 'react'
 import styled from 'styled-components';
-import {compact} from 'lodash'
+import {compact, last} from 'lodash'
 import {notification, Table, Popover, Button, Modal, Input, Spin} from 'antd';
 import {CSVReader, CSVDownloader} from 'react-papaparse'
 import {parsingItemsFromFile, parsingItemsToFile} from '../../utils';
@@ -222,7 +222,7 @@ const OrdersManagement = () => {
 
     useEffect(() => {
         if (ordersData?.orders) {
-            setData(JSON.parse(ordersData?.orders[0].data));
+            setData(JSON.parse(last(ordersData?.orders).data));
         }
     }, [ordersData])
 
@@ -254,10 +254,10 @@ const OrdersManagement = () => {
     }, [data])
 
     const updateServer = useCallback(() => {
-        updateOrders({variables: {id: 1, data: JSON.stringify(data)}})
+        updateOrders({variables: {id: ordersData?.orders.length, data: JSON.stringify(data)}})
             .then(resp => console.log({resp}))
             .catch(err => console.error({err}))
-    }, [updateOrders, data])
+    }, [updateOrders, data, ordersData])
 
     if (loading) return (
         <SpinWrapper><Spin /></SpinWrapper>
