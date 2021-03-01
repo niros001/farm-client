@@ -24,14 +24,29 @@ type Item {
 
 type Mutation {
     addItem(amount: Int!, category: String!, description: String, img_base64: String, subtitle: String, tags: String, title: String!, unit: String!): Item
+    createOrders(data: String): Storage
     deleteItem(id: ID!): Item
     signin(email: String!, password: String!): AuthPayload
     signup(email: String!, name: String!, password: String!): AuthPayload
     updateItem(amount: Int!, category: String!, description: String, id: ID!, img_base64: String, subtitle: String, tags: String, title: String!, unit: String!): Item
+    updateOrders(data: String, id: ID!): Storage
+    updateStorage(data: String, id: ID!): Storage
+}
+
+type Orders {
+    data: String!
+    id: ID!
 }
 
 type Query {
     items: [Item!]!
+    orders: [Orders!]!
+    storage: [Storage!]!
+}
+
+type Storage {
+    data: String!
+    id: ID!
 }
 
 type User {

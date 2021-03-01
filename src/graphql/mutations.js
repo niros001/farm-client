@@ -17,7 +17,7 @@ export const UPDATE_ITEM_MUTATION = gql`
 `;
 
 export const SIGNUP_MUTATION = gql`
-    mutation SignupUser($email: String!, $password: String!, $name: String) {
+    mutation SignupUser($email: String!, $password: String!, $name: String!) {
         signup(email: $email, password: $password, name: $name) {
             token
         }
@@ -28,6 +28,28 @@ export const LOGIN_MUTATION = gql`
     mutation LoginUser($email: String!, $password: String!) {
         signin(email: $email, password: $password) {
             token
+            user {
+                id
+                role
+                createdAt
+            }
+        }
+    }
+`;
+
+export const CREATE_ORDERS_MUTATION = gql`
+    mutation UpdateOrders($data: String!) {
+        createOrders(data: $data) {
+            id
+        }
+    }
+`;
+
+
+export const UPDATE_ORDERS_MUTATION = gql`
+    mutation UpdateOrders($id: ID!, $data: String!) {
+        updateOrders(id: $id, data: $data) {
+            id
         }
     }
 `;

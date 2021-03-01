@@ -15,3 +15,12 @@ export const ITEMS_QUERY = gql`
         }
     }
 `;
+
+export const ORDERS_QUERY = gql`
+    {
+        orders {
+            id
+            data
+        }
+    }
+`;

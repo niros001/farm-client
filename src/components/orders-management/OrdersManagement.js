@@ -1,10 +1,13 @@
-import React, {useMemo, useState, useCallback} from 'react'
+import React, {useMemo, useState, useCallback, useEffect} from 'react'
 import styled from 'styled-components';
 import {compact} from 'lodash'
-import {notification, Table, Popover, Button, Modal, Input} from 'antd';
+import {notification, Table, Popover, Button, Modal, Input, Spin} from 'antd';
 import {CSVReader, CSVDownloader} from 'react-papaparse'
 import {parsingItemsFromFile, parsingItemsToFile} from '../../utils';
 import StorageManagement from './StorageManagement';
+import {useMutation, useQuery} from '@apollo/client';
+import * as queries from '../../graphql/queries';
+import * as mutations from '../../graphql/mutations';
 
 const Container = styled.div`
   display: flex;
@@ -18,6 +21,13 @@ const StyledTable = styled(Table)`
     max-width: 250px;
     text-overflow: ellipsis;
   }
+`
+
+const SpinWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 `
 
 const ItemsRenderer = ({items, showUpdated}) => {
@@ -199,6 +209,10 @@ const columns = [
 ];
 
 const OrdersManagement = () => {
+    const {loading, error, data: ordersData} = useQuery(queries.ORDERS_QUERY);
+    const [createOrders, createOrdersState] = useMutation(mutations.CREATE_ORDERS_MUTATION);
+    const [updateOrders, updateOrdersState] = useMutation(mutations.UPDATE_ORDERS_MUTATION);
+
     const [data, setData] = useState([]);
     const [visible, setVisible] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState({});
@@ -206,12 +220,24 @@ const OrdersManagement = () => {
     const fileData = useMemo(() => parsingItemsToFile(data), [data]);
     const dataSource = useMemo(() => compact(data.slice(1, data.length)).map((d) => d.map((items, i) => items)), [data]);
 
+    useEffect(() => {
+        if (ordersData?.orders) {
+            setData(JSON.parse(ordersData?.orders[0].data));
+        }
+    }, [ordersData])
+
     const handleOnDrop = useCallback((data) => {
-        setData(data.map(({data}, index) => {
+        const parsedData = data.map(({data}, index) => {
             if (index !== 0) data[16] = parsingItemsFromFile(data[16])
             return [...data, index === 0 ? 'פריטים מעודכנים' : data[16]];
-        }));
-    }, []);
+        });
+        setData(parsedData);
+        createOrders({
+            variables: {data: JSON.stringify(parsedData)}
+        })
+            .then(resp => console.log({resp}))
+            .catch(err => console.error({err}))
+    }, [createOrders]);
 
     const handleOnError = useCallback((err, file, inputElem, reason) => {
             notification.error(err);
@@ -227,6 +253,15 @@ const OrdersManagement = () => {
         setData(newData)
     }, [data])
 
+    const updateServer = useCallback(() => {
+        updateOrders({variables: {id: 1, data: JSON.stringify(data)}})
+            .then(resp => console.log({resp}))
+            .catch(err => console.error({err}))
+    }, [updateOrders, data])
+
+    if (loading) return (
+        <SpinWrapper><Spin /></SpinWrapper>
+    );
     return (
         <Container>
             <CSVReader
@@ -247,6 +282,9 @@ const OrdersManagement = () => {
             >
                 <Button type="primary">Export to CSV/XLS</Button>
             </CSVDownloader>
+            <Button type="primary" style={{alignSelf: 'flex-start', margin: 20}} onClick={updateServer}>
+                UPDATE SERVER
+            </Button>
             <StyledTable
                 scroll={{x: '100%'}}
                 rowKey={(record) => record[0]}
@@ -265,8 +303,9 @@ const OrdersManagement = () => {
                 width="max-content"
                 visible={visible}
                 onCancel={() => (setVisible(false))}
-                onOk={() => console.log('Apply pressed')}
-                okText="APPLY"
+                footer={null}
+                // onOk={() => console.log('Apply pressed')}
+                // okText="APPLY"
             >
                 <ContentModal selectedOrder={selectedOrder} updateItems={updateItems} />
             </Modal>
